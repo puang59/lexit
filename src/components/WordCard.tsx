@@ -26,7 +26,7 @@ export default function WordCard({ word, meaning, examples, isOwner }: WordCardP
         </Button>
       )}
       <h2 className="text-xl font-semibold pr-10">{word}</h2>
-      <p className="italic mb-2">{meaning}</p>
+      <p className="italic mb-2 font-medium">{meaning}</p>
       <ul className="list-disc list-inside">
         {examples.map((example, index) => (
           <li key={index} className="mb-1">

@@ -16,6 +16,7 @@ import WordCard from "@/components/WordCard";
 import AlphabetFilter from "@/components/AlphabetFilter";
 import { useState, useRef, useEffect } from "react";
 import Loader from "@/components/Loader";
+import SmoothFadeLayout from "@/components/SmoothFadePageTransition";
 
 export default function Vault() {
   const { user } = useUser();
@@ -133,99 +134,102 @@ export default function Vault() {
   }, []);
 
   return (
-    <main className="flex flex-col items-center justify-center text-black h-screen overflow-hidden">
-      <header className="flex justify-end items-center p-4 gap-4 h-16 w-full max-w-3xl mx-auto">
-        <NavBar />
+    <SmoothFadeLayout>
+      <main className="flex flex-col items-center justify-center text-black h-screen overflow-hidden">
+        <header className="flex justify-end items-center p-4 gap-4 h-16 w-full max-w-3xl mx-auto">
+          <NavBar />
 
-        <SignedOut>
-          <SignInButton>
-            <Button variant="outline">Sign In</Button>
-          </SignInButton>
-          <SignUpButton>
-            <Button>Sign Up</Button>
-          </SignUpButton>
-        </SignedOut>
-        <SignedIn>
-          <UserButton />
-        </SignedIn>
-      </header>
+          <SignedOut>
+            <SignInButton>
+              <Button variant="outline">Sign In</Button>
+            </SignInButton>
+            <SignUpButton>
+              <Button>Sign Up</Button>
+            </SignUpButton>
+          </SignedOut>
+          <SignedIn>
+            <UserButton />
+          </SignedIn>
+        </header>
 
-      <div className="flex flex-col justify-center items-center mt-5 w-full max-w-3xl mx-auto px-6">
-        <h1 className="text-2xl font-bold">Word Vault</h1>
-        {user && (
-          <p className="mt-2 text-gray-600">
-            Welcome, {user.firstName}! Here are your saved words.
-          </p>
-        )}
+        <div className="flex flex-col justify-center items-center mt-5 w-full max-w-3xl mx-auto px-6">
+          <h1 className="text-2xl font-bold">Word Vault</h1>
+          {user && (
+            <p className="mt-2 text-gray-600 dark:text-gray-300">
+              Welcome, {user.firstName}! Here are your saved words.
+            </p>
+          )}
 
-        {/* Search Input */}
-        <form className="flex mb-6 mt-4 gap-2 w-full">
-          <div className="relative flex-1">
-            <Input
-              ref={searchInputRef}
-              type="text"
-              placeholder="search your words"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-            <kbd className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none bg-gray-100 text-gray-500 text-xs px-1.5 py-0.5 rounded border">
-              ⌘K
-            </kbd>
+          {/* Search Input */}
+          <form className="flex mb-6 mt-4 gap-2 w-full">
+            <div className="relative flex-1">
+              <Input
+                ref={searchInputRef}
+                type="text"
+                placeholder="search your words"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="dark:text-white"
+              />
+              <kbd className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none bg-gray-100 text-gray-500 text-xs px-1.5 py-0.5 rounded border">
+                ⌘K
+              </kbd>
+            </div>
+            <Button type="submit" className="cursor-pointer">
+              search
+            </Button>
+          </form>
+
+          {/* Words List */}
+          <div
+            ref={wordListRef}
+            className="w-full max-w-3xl mx-auto max-h-[55vh] overflow-y-auto"
+          >
+            {allWords.length > 0 ? (
+              <>
+                <ul>
+                  {allWords.map((word) => (
+                    <WordCard
+                      key={word._id}
+                      word={word.word}
+                      meaning={word.meaning}
+                      examples={word.examples}
+                      isOwner={isOwner(word.owner || "")}
+                    />
+                  ))}
+                </ul>
+                {isLoadingMore && (
+                  <div className="flex justify-center py-4">
+                    <Loader />
+                  </div>
+                )}
+              </>
+            ) : (
+              <div>
+                <p className="flex items-center justify-center">
+                  {selectedLetter &&
+                    `No words found starting with "${selectedLetter}".`}
+                </p>
+                <Loader />
+              </div>
+            )}
           </div>
-          <Button type="submit" className="cursor-pointer">
-            search
-          </Button>
-        </form>
 
-        {/* Words List */}
-        <div
-          ref={wordListRef}
-          className="w-full max-w-3xl mx-auto max-h-[55vh] overflow-y-auto"
-        >
-          {allWords.length > 0 ? (
-            <>
-              <ul>
-                {allWords.map((word) => (
-                  <WordCard
-                    key={word._id}
-                    word={word.word}
-                    meaning={word.meaning}
-                    examples={word.examples}
-                    isOwner={isOwner(word.owner || "")}
-                  />
-                ))}
-              </ul>
-              {isLoadingMore && (
-                <div className="flex justify-center py-4">
-                  <Loader />
-                </div>
-              )}
-            </>
-          ) : (
-            <div>
-              <p className="flex items-center justify-center">
-                {selectedLetter &&
-                  `No words found starting with "${selectedLetter}".`}
-              </p>
-              <Loader />
+          {/* Alphabet Filter */}
+          {allWords.length > 0 && (
+            <div className="mt-4">
+              <AlphabetFilter
+                words={allWords}
+                selectedLetter={selectedLetter}
+                onLetterSelect={setSelectedLetter}
+              />
             </div>
           )}
         </div>
 
-        {/* Alphabet Filter */}
-        {allWords.length > 0 && (
-          <div className="mt-4">
-            <AlphabetFilter
-              words={allWords}
-              selectedLetter={selectedLetter}
-              onLetterSelect={setSelectedLetter}
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Footer */}
-      <footer className="mt-auto mb-10 ml-auto mx-5"></footer>
-    </main>
+        {/* Footer */}
+        <footer className="mt-auto mb-10 ml-auto mx-5"></footer>
+      </main>
+    </SmoothFadeLayout>
   );
 }

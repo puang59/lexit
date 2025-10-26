@@ -20,6 +20,7 @@ import AlphabetFilter from "@/components/AlphabetFilter";
 import Image from "next/image";
 import NavBar from "@/components/NavBar";
 import Loader from "@/components/Loader";
+import SmoothFadeLayout from "@/components/SmoothFadePageTransition";
 
 export default function Home() {
   const router = useRouter();
@@ -181,174 +182,181 @@ export default function Home() {
   }, [router, showHelp, setQuery]);
 
   return (
-    <main className="flex flex-col items-center justify-center text-black h-screen overflow-hidden">
-      <header className="flex justify-end items-center p-4 gap-4 h-16 w-full max-w-3xl mx-auto">
-        <NavBar />
-        <SignedOut>
-          <SignInButton>
-            <Button variant="outline">Sign In</Button>
-          </SignInButton>
-          <SignUpButton>
-            <Button>Sign Up</Button>
-          </SignUpButton>
-        </SignedOut>
-        <SignedIn>
-          <UserButton />
-        </SignedIn>
-      </header>
-      <div className="flex flex-col justify-center items-center w-full max-w-3xl mx-auto px-6">
-        <Image src="/logo.png" alt="Lexit Logo" width={80} height={80} />
-        {wordsCount && (
-          <p className="mt-1 text-xs text-gray-600">Total {wordsCount} words</p>
-        )}
-        <form className="flex mb-10 mt-5 gap-2 w-full">
-          <div className="relative flex-1">
-            <Input
-              ref={searchInputRef}
-              type="text"
-              placeholder="search words"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-            <kbd className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none bg-gray-100 text-gray-500 text-xs px-1.5 py-0.5 rounded border">
-              ⌘K
-            </kbd>
-          </div>
-          <Button type="submit" className="cursor-pointer">
-            search
-          </Button>
-        </form>
-      </div>
-
-      {/* Words List */}
-      <div
-        ref={wordListRef}
-        className="w-full max-w-3xl mx-auto max-h-[65vh] overflow-y-auto"
-        data-word-list
-      >
-        {allWords.length > 0 ? (
-          <>
-            <ul>
-              {allWords.map((word) => (
-                <WordCard
-                  key={word._id}
-                  word={word.word}
-                  meaning={word.meaning}
-                  examples={word.examples}
-                  isOwner={isOwner(word.owner || "")}
-                />
-              ))}
-            </ul>
-            {isLoadingMore && (
-              <div className="flex justify-center py-4">
-                <Loader />
-              </div>
-            )}
-          </>
-        ) : (
-          <div>
-            <p className="flex items-center justify-center">
-              {selectedLetter &&
-                `No words found starting with "${selectedLetter}".`}
+    <SmoothFadeLayout>
+      <main className="flex flex-col items-center justify-center md:text-black text-white h-screen overflow-hidden">
+        <header className="flex justify-end items-center p-4 gap-4 h-16 w-full max-w-3xl mx-auto">
+          <NavBar />
+          <SignedOut>
+            <SignInButton>
+              <Button variant="outline">Sign In</Button>
+            </SignInButton>
+            <SignUpButton>
+              <Button>Sign Up</Button>
+            </SignUpButton>
+          </SignedOut>
+          <SignedIn>
+            <UserButton />
+          </SignedIn>
+        </header>
+        <div className="flex flex-col justify-center items-center w-full max-w-3xl mx-auto px-6">
+          <Image src="/logo.png" alt="Lexit Logo" width={80} height={80} />
+          {wordsCount && (
+            <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
+              Total {wordsCount} words
             </p>
-            <Loader />
-          </div>
-        )}
-      </div>
+          )}
+          <form className="flex mb-10 mt-5 gap-2 w-full">
+            <div className="relative flex-1">
+              <Input
+                ref={searchInputRef}
+                type="text"
+                placeholder="search words"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="dark:text-white"
+              />
+              <kbd className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-500 text-xs px-1.5 py-0.5 rounded border">
+                ⌘K
+              </kbd>
+            </div>
+            <Button type="submit" className="cursor-pointer">
+              search
+            </Button>
+          </form>
+        </div>
 
-      {/* Footer with Alphabet Filter */}
-      <footer className="mt-auto mb-6 w-full flex items-center justify-between">
-        <div className="w-full max-w-3xl mx-auto px-6 flex justify-center">
-          {allWords.length > 0 && (
-            <AlphabetFilter
-              words={allWords}
-              selectedLetter={selectedLetter}
-              onLetterSelect={setSelectedLetter}
-            />
+        {/* Words List */}
+        <div
+          ref={wordListRef}
+          className="w-full max-w-3xl mx-auto max-h-[65vh] overflow-y-auto"
+          data-word-list
+        >
+          {allWords.length > 0 ? (
+            <>
+              <ul>
+                {allWords.map((word) => (
+                  <WordCard
+                    key={word._id}
+                    word={word.word}
+                    meaning={word.meaning}
+                    examples={word.examples}
+                    isOwner={isOwner(word.owner || "")}
+                  />
+                ))}
+              </ul>
+              {isLoadingMore && (
+                <div className="flex justify-center py-4">
+                  <Loader />
+                </div>
+              )}
+            </>
+          ) : (
+            <div>
+              <p className="flex items-center justify-center">
+                {selectedLetter &&
+                  `No words found starting with "${selectedLetter}".`}
+              </p>
+              <Loader />
+            </div>
           )}
         </div>
+
+        {/* Footer with Alphabet Filter */}
+        <footer className="mt-auto mb-6 w-full flex items-center justify-center">
+          <div className="w-full max-w-3xl mx-auto px-6 flex justify-center">
+            {allWords.length > 0 && (
+              <AlphabetFilter
+                words={allWords}
+                selectedLetter={selectedLetter}
+                onLetterSelect={setSelectedLetter}
+              />
+            )}
+          </div>
+        </footer>
+
+        {/* Fixed Add Button */}
         <Button
           size="icon"
-          className="rounded-full shrink-0 mr-6 mb-2 cursor-pointer"
+          className="fixed bottom-20 right-6 rounded-full cursor-pointer z-50"
           onClick={() => router.push("/add-word")}
         >
           <Plus size={16} />
         </Button>
-      </footer>
 
-      {/* Help Dialog */}
-      {showHelp && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Keyboard Shortcuts</h3>
-              <button
-                type="button"
-                onClick={() => setShowHelp(false)}
-                onKeyDown={(e) => e.key === "Enter" && setShowHelp(false)}
-                className="text-gray-400 hover:text-gray-600"
-                aria-label="Close help dialog"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between items-center">
-                <span>Focus search</span>
-                <div className="flex gap-1">
-                  <kbd className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded border">
-                    ⌘K
+        {/* Help Dialog */}
+        {showHelp && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-black rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold dark:text-white">Keyboard Shortcuts</h3>
+                <button
+                  type="button"
+                  onClick={() => setShowHelp(false)}
+                  onKeyDown={(e) => e.key === "Enter" && setShowHelp(false)}
+                  className="text-gray-400 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  aria-label="Close help dialog"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="dark:text-white">Focus search</span>
+                  <div className="flex gap-1">
+                    <kbd className="bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 text-xs px-2 py-1 rounded border">
+                      ⌘K
+                    </kbd>
+                    <kbd className="bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 text-xs px-2 py-1 rounded border">
+                      /
+                    </kbd>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="dark:text-white">Clear search</span>
+                  <kbd className="bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-4000 text-xs px-2 py-1 rounded border">
+                    Esc
                   </kbd>
-                  <kbd className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded border">
-                    /
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="dark:text-white">Add new word</span>
+                  <div className="flex gap-1">
+                    <kbd className="bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 text-xs px-2 py-1 rounded border">
+                      +
+                    </kbd>
+                    <kbd className="bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 text-xs px-2 py-1 rounded border">
+                      A
+                    </kbd>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="dark:text-white">Scroll through words</span>
+                  <div className="flex gap-1">
+                    <kbd className="bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 text-xs px-2 py-1 rounded border">
+                      J
+                    </kbd>
+                    <kbd className="bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 text-xs px-2 py-1 rounded border">
+                      K
+                    </kbd>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="dark:text-white">Show this help</span>
+                  <kbd className="bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 text-xs px-2 py-1 rounded border">
+                    Shift + ?
                   </kbd>
                 </div>
               </div>
-              <div className="flex justify-between items-center">
-                <span>Clear search</span>
-                <kbd className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded border">
+              <div className="mt-4 pt-3 border-t text-xs text-gray-500 dark:text-gray-400 text-center">
+                Press{" "}
+                <kbd className="bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 text-xs px-1 py-0.5 rounded border">
                   Esc
-                </kbd>
+                </kbd>{" "}
+                or click outside to close
               </div>
-              <div className="flex justify-between items-center">
-                <span>Add new word</span>
-                <div className="flex gap-1">
-                  <kbd className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded border">
-                    +
-                  </kbd>
-                  <kbd className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded border">
-                    A
-                  </kbd>
-                </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <span>Scroll through words</span>
-                <div className="flex gap-1">
-                  <kbd className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded border">
-                    J
-                  </kbd>
-                  <kbd className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded border">
-                    K
-                  </kbd>
-                </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <span>Show this help</span>
-                <kbd className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded border">
-                  Shift + ?
-                </kbd>
-              </div>
-            </div>
-            <div className="mt-4 pt-3 border-t text-xs text-gray-500 text-center">
-              Press{" "}
-              <kbd className="bg-gray-100 text-gray-600 text-xs px-1 py-0.5 rounded border">
-                Esc
-              </kbd>{" "}
-              or click outside to close
             </div>
           </div>
-        </div>
-      )}
-    </main>
+        )}
+      </main>
+    </SmoothFadeLayout>
   );
 }

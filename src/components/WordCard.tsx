@@ -43,7 +43,7 @@ export default function WordCard({
   };
 
   return (
-    <div className="relative mx-10 py-2 px-5 mb-5 border border-zinc-300 rounded-sm">
+    <div className="relative mx-10 py-2 px-5 mb-5 border border-zinc-300 dark:border-zinc-600 rounded-sm">
       {isOwner && (
         <Button
           variant="ghost"
@@ -55,7 +55,7 @@ export default function WordCard({
         </Button>
       )}
       <div className="flex items-center gap-2">
-        <h2 className="text-xl font-semibold">{word}</h2>
+        <h2 className="text-xl font-semibold dark:text-white">{word}</h2>
         <Button
           variant="ghost"
           size="icon"
@@ -64,12 +64,12 @@ export default function WordCard({
         >
           <Volume2
             size={16}
-            className={cx("text-black", isSpeaking && "text-gray-900")}
+            className={cx("text-black dark:text-white", isSpeaking && "text-gray-900 dark:text-gray-500")}
           />
         </Button>
       </div>
-      <p className="italic mb-2">{meaning}</p>
-      <ul className="list-disc list-inside">
+      <p className="italic mb-2 dark:text-white">{meaning}</p>
+      <ul className="list-disc list-inside dark:text-white">
         {examples.map((example, index) => {
           const regex = new RegExp(`\\b${word}\\w*`, "gi");
           const parts = example.split(regex);

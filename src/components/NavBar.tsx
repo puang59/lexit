@@ -1,6 +1,8 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Button } from "./ui/button";
+import Toggle from '@/components/Toggle'
+import { cn } from "@/lib/utils";
 
 export default function NavBar() {
   const router = useRouter();
@@ -33,11 +35,11 @@ export default function NavBar() {
     <nav className="w-full h-16 flex items-center">
       <Button
         variant="ghost"
-        className={
+        className={cn(
           pathname === "/"
             ? "underline font-bold text-md hover:bg-white cursor-pointer"
             : "text-md hover:bg-white cursor-pointer"
-        }
+  ,"text-black dark:text-white")}
         onClick={() => router.push("/")}
       >
         {" "}
@@ -45,11 +47,11 @@ export default function NavBar() {
       </Button>
       <Button
         variant="ghost"
-        className={
+        className={cn(
           pathname === "/vault"
             ? "underline font-bold text-md hover:bg-white cursor-pointer"
             : "text-md hover:bg-white cursor-pointer"
-        }
+   ,"text-black dark:text-white")}
         onClick={() => router.push("/vault")}
       >
         {" "}
@@ -57,16 +59,17 @@ export default function NavBar() {
       </Button>
       <Button
         variant="ghost"
-        className={
+        className={cn(
           pathname === "/contributors"
             ? "underline font-bold text-md hover:bg-white cursor-pointer"
             : "text-md hover:bg-white cursor-pointer"
-        }
+  ,"text-black dark:text-white")}
         onClick={() => router.push("/contributors")}
       >
         {" "}
         Contributors {pathname != "/contributors" && "[c]"}
       </Button>
+      <div className="w-fit"><Toggle /></div>
     </nav>
   );
 }

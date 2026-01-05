@@ -4,6 +4,9 @@
 
 # Lexit - Personal Vocabulary Builder
 
+
+<a href="https://app.devdoq.com/dashboard/1080980914?name=lexit&tab=document"><img src="https://app.devdoq.com/shields/read_docs.png" alt="Read Docs" width="120" height="45"></a>
+
 A web app for building your personal vocabulary with AI-powered definitions and examples.
 
 ## Local Setup

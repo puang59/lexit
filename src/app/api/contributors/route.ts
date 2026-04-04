@@ -12,6 +12,7 @@ export async function GET(request: Request) {
       state: "closed",
     });
 
+    console.log("PULLS: ", pulls);
     const contributors = Array.from(
       new Map(
         pulls
@@ -27,11 +28,13 @@ export async function GET(request: Request) {
       ).values()
     );
 
+    console.log("CONTRIBUTORS: ", contributors);
     return new Response(JSON.stringify({ contributors }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
+    console.log("ERROR: ", err);
     return new Response('Bad Request', { status: 400 });
   }
 }

@@ -192,6 +192,7 @@ export default function Vault() {
                       key={word._id}
                       word={word.word}
                       meaning={word.meaning}
+                      trigger={word.trigger}
                       examples={word.examples}
                       isOwner={isOwner(word.owner || "")}
                     />

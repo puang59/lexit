@@ -150,7 +150,7 @@ export default function AddWord() {
       const baseRoot = base.slice(0, 5);
 
       // keep only clean derivations
-      const derivations = data.filter((w) => {
+      const derivations = data.filter((w: { word: string }) => {
         const wLower = w.word.toLowerCase();
 
         const valid =

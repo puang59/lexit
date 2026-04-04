@@ -188,7 +188,9 @@ export default function Home() {
           <NavBar />
           <SignedOut>
             <SignInButton>
-              <Button variant="outline" className="dark:text-white">Sign In</Button>
+              <Button variant="outline" className="dark:text-white">
+                Sign In
+              </Button>
             </SignInButton>
             <SignUpButton>
               <Button>Sign Up</Button>
@@ -237,34 +239,40 @@ export default function Home() {
           className="w-full max-w-3xl mx-auto max-h-[65vh] overflow-y-auto"
           data-word-list
         >
-          {allWords.length > 0 ? (
-            <>
-              <ul>
-                {allWords.map((word) => (
-                  <WordCard
-                    key={word._id}
-                    word={word.word}
-                    meaning={word.meaning}
-                    examples={word.examples}
-                    isOwner={isOwner(word.owner || "")}
-                  />
-                ))}
-              </ul>
-              {isLoadingMore && (
-                <div className="flex justify-center py-4">
-                  <Loader />
-                </div>
-              )}
-            </>
-          ) : (
-            <div>
-              <p className="flex items-center justify-center">
-                {selectedLetter &&
-                  `No words found starting with "${selectedLetter}".`}
-              </p>
-              <Loader />
-            </div>
-          )}
+          {words &&
+            (words.length > 0 ? (
+              <>
+                <ul>
+                  {allWords.map((word) => (
+                    <WordCard
+                      key={word._id}
+                      word={word.word}
+                      meaning={word.meaning}
+                      trigger={word.trigger}
+                      examples={word.examples}
+                      isOwner={isOwner(word.owner || "")}
+                    />
+                  ))}
+                </ul>
+                {isLoadingMore && (
+                  <div className="flex justify-center py-4">
+                    <Loader />
+                  </div>
+                )}
+              </>
+            ) : (
+              <div>
+                {selectedLetter ? (
+                  <p className="flex items-center justify-center">
+                    No words found
+                  </p>
+                ) : (
+                  <p className="flex items-center justify-center">
+                    No words found
+                  </p>
+                )}
+              </div>
+            ))}
         </div>
 
         {/* Footer with Alphabet Filter */}

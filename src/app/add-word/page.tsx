@@ -11,6 +11,7 @@ import { useEffect, useState, useRef } from "react";
 import WordCard from "@/components/WordCard";
 import { useUser } from "@clerk/nextjs";
 import SmoothFadeLayout from "@/components/SmoothFadePageTransition";
+import { greetings } from "../consts";
 
 const notifySuccess = () => toast.success("Word added successfully!");
 const notifyError = (message: string) => toast.error(`${message}`);
@@ -27,6 +28,7 @@ export default function AddWord() {
 
   const [word, setWord] = useState("");
   const [meaning, setMeaning] = useState("");
+  const [trigger, setTrigger] = useState("");
   const [examples, setExamples] = useState<string[]>([]);
 
   const [debouncedWord, setDebouncedWord] = useState(word);
@@ -34,16 +36,9 @@ export default function AddWord() {
 
   const [meaningExists, setMeaningExists] = useState(false);
   const [meaningLoading, setMeaningLoading] = useState(false);
+  const [triggerLoading, setTriggerLoading] = useState(false);
   const [examplesLoading, setExamplesLoading] = useState(false);
   const [greeting, setGreeting] = useState("");
-
-  const greetings = [
-    "Discovered a new word? Let's define it!",
-    "Found a word no one knows? Add it here!",
-    "Help us grow the dictionary! Submit your word.",
-    "Got a rare word? Share its meaning!",
-    "What did you come across?",
-  ];
 
   useEffect(() => {
     const random = greetings[Math.floor(Math.random() * greetings.length)];
@@ -52,6 +47,7 @@ export default function AddWord() {
 
   useEffect(() => {
     setMeaning("");
+    setTrigger("");
     setExamples([]);
 
     const convexSearch = setTimeout(() => {
@@ -80,7 +76,7 @@ export default function AddWord() {
 
       if (res.status === 429)
         throw new Error(
-          "Rate limit exceeded. Please wait a moment before trying again."
+          "Rate limit exceeded. Please wait a moment before trying again.",
         );
       if (!res.ok) throw new Error("Failed to generate meaning");
       const data = await res.json();
@@ -89,6 +85,31 @@ export default function AddWord() {
       notifyError((error as Error).message);
     } finally {
       setMeaningLoading(false);
+    }
+  };
+
+  const fetchTrigger = async () => {
+    try {
+      setTriggerLoading(true);
+      const res = await fetch("/api/generate-trigger", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ word: AIDebouncedWord }),
+      });
+
+      if (res.status === 429)
+        throw new Error(
+          "Rate limit exceeded. Please wait a moment before trying again.",
+        );
+      if (!res.ok) throw new Error("Failed to generate trigger.");
+      const data = await res.json();
+      setTrigger(data.trigger);
+    } catch (error) {
+      notifyError((error as Error).message);
+    } finally {
+      setTriggerLoading(false);
     }
   };
 
@@ -105,7 +126,7 @@ export default function AddWord() {
 
       if (res.status === 429)
         throw new Error(
-          "Rate limit exceeded. Please wait a moment before trying again."
+          "Rate limit exceeded. Please wait a moment before trying again.",
         );
       if (!res.ok) throw new Error("Failed to generate examples");
       const data = await res.json();
@@ -117,10 +138,48 @@ export default function AddWord() {
     }
   };
 
+  const fetchDerviation = async () => {
+    try {
+      const res = await fetch(
+        `https://api.datamuse.com/words?sp=${encodeURIComponent(word.slice(0, 6))}*&md=p&max=100`,
+      );
+      if (!res.ok) throw new Error("Failed to fetch derivations");
+      const data = await res.json();
+
+      const base = word.toLowerCase();
+      const baseRoot = base.slice(0, 5);
+
+      // keep only clean derivations
+      const derivations = data.filter((w) => {
+        const wLower = w.word.toLowerCase();
+
+        const valid =
+          wLower.startsWith(baseRoot) && // same root
+          !wLower.includes(" ") && // ignore phrases
+          wLower !== base && // not the same word
+          !/[^a-zA-Z]/.test(wLower) && // remove words with weird chars
+          (wLower.includes("ly") ||
+            wLower.includes("ness") ||
+            wLower.includes("est") ||
+            wLower.includes("ate") ||
+            wLower.includes("acy") ||
+            wLower.includes("ous")); // common derivational suffixes
+
+        return valid;
+      });
+
+      console.log(derivations);
+    } catch (error) {
+      notifyError((error as Error).message);
+    }
+  };
+
   useEffect(() => {
     if (!AIDebouncedWord || meaningExists) return;
 
+    fetchDerviation();
     fetchMeaning();
+    fetchTrigger();
     fetchExamples();
   }, [AIDebouncedWord]);
 
@@ -137,7 +196,7 @@ export default function AddWord() {
 
   const getWord = useQuery(
     api.words.getWordByName,
-    debouncedWord ? { word: debouncedWord } : "skip"
+    debouncedWord ? { word: debouncedWord } : "skip",
   );
 
   const isNumeric = (n: string) => {
@@ -153,7 +212,7 @@ export default function AddWord() {
     if (alreadyExists) return notifyError("Word already exists");
     if (meaning.trim().length === 0 || examples.length === 0)
       return notifyError(
-        "Sit Tight while AI generates the meaning and examples!"
+        "Sit Tight while AI generates the meaning and examples!",
       );
     const capitalizedWord = word.charAt(0).toUpperCase() + word.slice(1);
     try {
@@ -161,6 +220,7 @@ export default function AddWord() {
         owner: user?.id || "anonymous",
         word: capitalizedWord,
         meaning: meaning,
+        trigger: trigger,
         examples: examples,
       });
       void updateCount();
@@ -218,6 +278,7 @@ export default function AddWord() {
   const handleRegenerateMeaning = async (type: string) => {
     try {
       if (type === "Meaning") await fetchMeaning();
+      else if (type === "Trigger") await fetchTrigger();
       else await fetchExamples();
     } catch (err) {
       notifyError((err as Error).message);
@@ -283,6 +344,36 @@ export default function AddWord() {
                 <p>Generating definition...</p>
               </div>
             )}
+
+            {trigger.length > 0 && (
+              <section>
+                <div className="mt-5 flex items-center justify-between">
+                  <label className="block font-medium text-sm text-gray-700 dark:text-gray-400">
+                    Trigger (generated by AI)
+                  </label>
+                  <Button
+                    type="button"
+                    className="bg-opacity-0 rounded-md cursor-pointer hover:bg-white transition duration-350 text-gray-500 hover:text-gray-700"
+                    onClick={() => handleRegenerateMeaning("Trigger")}
+                  >
+                    <RefreshCcwIcon
+                      size={18}
+                      className={meaningLoading ? "animate-spin" : ""}
+                    />
+                  </Button>
+                </div>
+                <div className="border-dashed border-2 rounded-md px-3 py-2 bg-white dark:bg-black text-sm flex-1">
+                  <span>{trigger}</span>
+                </div>
+              </section>
+            )}
+            {triggerLoading && (
+              <div className="flex items-center mt-5 text-gray-500">
+                <LoaderPinwheel className="animate-spin mr-2" color="#6a7282" />
+                <p>Generating trigger...</p>
+              </div>
+            )}
+
             {examples.length > 0 && (
               <section>
                 <div className="flex items-center justify-between mt-5">
@@ -342,6 +433,7 @@ export default function AddWord() {
             <WordCard
               word={getWord?.word || ""}
               meaning={getWord?.meaning || ""}
+              trigger={getWord?.trigger || ""}
               examples={getWord?.examples || []}
               isOwner={isOwner(getWord?.owner || "")}
             />

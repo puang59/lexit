@@ -9,6 +9,7 @@ import { cx } from "class-variance-authority";
 interface WordCardProps {
   word: string;
   meaning: string;
+  trigger: string;
   examples: string[];
   isOwner: boolean;
 }
@@ -16,6 +17,7 @@ interface WordCardProps {
 export default function WordCard({
   word,
   meaning,
+  trigger,
   examples,
   isOwner,
 }: WordCardProps) {
@@ -76,26 +78,27 @@ export default function WordCard({
           const matches = example.match(regex) || [];
 
           return (
-            <li
-              key={index}
-              className="mb-1"
-            >
+            <li key={index} className="mb-1">
               <span>
                 {parts.map((part, i) => (
                   <span key={i}>
                     {part}
                     {i < matches.length && (
-                      <strong className="font-semibold">
-                        {matches[i]}
-                      </strong>
+                      <strong className="font-semibold">{matches[i]}</strong>
                     )}
                   </span>
                 ))}
               </span>
             </li>
-          )
+          );
         })}
       </ul>
+
+      <p className="mt-4">
+        {" "}
+        <span className="font-bold">[TRIGGER] </span>{" "}
+        <span className="italic"> {trigger} </span>
+      </p>
     </div>
   );
 }

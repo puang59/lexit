@@ -6,6 +6,7 @@ export const createWord = mutation({
     owner: v.string(),
     word: v.string(),
     meaning: v.string(),
+    trigger: v.string(),
     examples: v.array(v.string()),
   },
   handler: async (ctx, args) => {
@@ -13,6 +14,7 @@ export const createWord = mutation({
       owner: args.owner,
       word: args.word,
       meaning: args.meaning,
+      trigger: args.trigger,
       examples: args.examples,
     });
     return id;
@@ -44,13 +46,13 @@ export const lazyLoadWords = query({
 
     if (args.selectedLetter) {
       allWords = allWords.filter(
-        (w) => w.word.charAt(0).toUpperCase() === args.selectedLetter
+        (w) => w.word.charAt(0).toUpperCase() === args.selectedLetter,
       );
     }
 
     if (args.startsAfterId) {
       const startIndex = allWords.findIndex(
-        (w) => w._id === args.startsAfterId
+        (w) => w._id === args.startsAfterId,
       );
       if (startIndex !== -1) {
         return allWords.slice(startIndex + 1, startIndex + 1 + args.limit);
@@ -67,7 +69,7 @@ export const getWordByName = query({
   handler: async (ctx, args) => {
     const allWords = await ctx.db.query("words").collect();
     return allWords.find(
-      (w) => w.word.toLowerCase() === args.word.toLowerCase()
+      (w) => w.word.toLowerCase() === args.word.toLowerCase(),
     );
   },
 });
@@ -145,13 +147,13 @@ export const lazyLoadUserWords = query({
 
     if (args.selectedLetter) {
       allWords = allWords.filter(
-        (w) => w.word.charAt(0).toUpperCase() === args.selectedLetter
+        (w) => w.word.charAt(0).toUpperCase() === args.selectedLetter,
       );
     }
 
     if (args.startsAfterId) {
       const startIndex = allWords.findIndex(
-        (w) => w._id === args.startsAfterId
+        (w) => w._id === args.startsAfterId,
       );
       if (startIndex !== -1) {
         return allWords.slice(startIndex + 1, startIndex + 1 + args.limit);

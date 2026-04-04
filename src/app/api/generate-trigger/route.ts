@@ -1,7 +1,7 @@
-import { generateText } from "ai";
-import { groq } from "@ai-sdk/groq";
-import { rateLimit } from "@/utility/RatelimitSetup";
 import { MODEL } from "@/app/consts";
+import { rateLimit } from "@/utility/RatelimitSetup";
+import { groq } from "@ai-sdk/groq";
+import { generateText } from "ai";
 
 export async function POST(request: Request) {
   try {
@@ -27,19 +27,25 @@ export async function POST(request: Request) {
     const { text } = await generateText({
       model: groq(MODEL),
       prompt: `
-        Give a very simple meaning for the word "${word}".
+        For the word "${word}", generate a short "trigger".
+
+        A trigger is a quick mental cue that helps you know when to use the word.
 
         Rules:
-        - use plain everyday English
-        - maximum 10–12 words
-        - no formal or dictionary-style language
-        - focus on clarity, not completeness
+        - describe a common, everyday situation (not a definition)
+        - keep it general enough to apply in many contexts
+        - avoid very specific scenarios (no airplane, courtroom, etc.)
+        - use simple, natural language
+        - keep it under 6–8 words
+        - make it feel like something you instantly recognize
 
-        Output only the meaning.
+        Output only the trigger, nothing else.
       `,
     });
 
-    return new Response(JSON.stringify({ definition: text }), {
+    console.log("TRIGGER: ", text);
+
+    return new Response(JSON.stringify({ trigger: text }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });

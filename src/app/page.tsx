@@ -24,6 +24,7 @@ import SmoothFadeLayout from "@/components/SmoothFadePageTransition";
 import { useShortcuts } from "@/utility/KeyboardShortcutProvider";
 import HelpDialog from "@/components/HelpDialog";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useStates } from "@/store/states";
 
 export default function Home() {
   const router = useRouter();
@@ -84,6 +85,8 @@ export default function Home() {
     }
   }, [allWords, isLoadingMore, hasMore]);
 
+  const {scrollPosition, setScrollPosition} = useStates();
+
   const handleScroll = () => {
     if (!wordListRef.current || isLoadingMore || !hasMore) return;
 
@@ -97,10 +100,11 @@ export default function Home() {
     }
   };
 
-  const isOwner = (ownerId: string) => {
-    if (ownerId === user?.id) return true;
-    return false;
-  };
+  useEffect(() => {
+    if (wordListRef.current && scrollPosition > 0 && allWords.length > 0) {
+      wordListRef.current.scrollTop = scrollPosition;
+    }
+  }, [allWords.length, scrollPosition])
 
   return (
     <SmoothFadeLayout>
@@ -170,7 +174,8 @@ export default function Home() {
                       meaning={word.meaning}
                       trigger={word.trigger}
                       examples={word.examples}
-                      isOwner={isOwner(word.owner || "")}
+                      currentUserId={user?.id}
+                      ownerId={word.owner}
                     />
                   ))}
                 </ul>
@@ -208,7 +213,11 @@ export default function Home() {
         <Button
           size="icon"
           className="fixed bottom-20 right-6 rounded-full cursor-pointer z-50"
-          onClick={() => router.push("/add-word")}
+          onClick={() => {
+            if (wordListRef.current) setScrollPosition(wordListRef.current.scrollTop);
+
+            router.push("/add-word")}
+          }
         >
           <Plus size={16} />
         </Button>

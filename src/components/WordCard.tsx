@@ -11,7 +11,8 @@ interface WordCardProps {
   meaning: string;
   trigger: string;
   examples: string[];
-  isOwner: boolean;
+  currentUserId: string | undefined;
+  ownerId: string;
 }
 
 const WordCard = memo(function WordCard({
@@ -19,7 +20,8 @@ const WordCard = memo(function WordCard({
   meaning,
   trigger,
   examples,
-  isOwner,
+  currentUserId,
+  ownerId
 }: WordCardProps) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const deleteWord = useMutation(api.words.deleteWord);
@@ -43,7 +45,7 @@ const WordCard = memo(function WordCard({
 
     window.speechSynthesis.speak(utterance);
   };
-
+  const isOwner = ownerId === currentUserId;
   return (
     <div className="relative mx-10 py-2 px-5 mb-5 border border-zinc-300 dark:border-zinc-800 rounded-sm dark:text-gray-300">
       {isOwner && (
@@ -66,7 +68,7 @@ const WordCard = memo(function WordCard({
         >
           <Volume2
             size={16}
-            className={cx("text-black", isSpeaking && "text-gray-900")}
+            className={cx("text-black dark:text-gray-300", isSpeaking && "text-gray-900 dark:text-gray-500")}
           />
         </Button>
       </div>

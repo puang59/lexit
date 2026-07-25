@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useMemo } from "react";
 
 interface AlphabetFilterProps {
   words: Array<{ word: string }>;
@@ -14,13 +15,15 @@ export default function AlphabetFilter({
   onLetterSelect,
 }: AlphabetFilterProps) {
   // Get unique first letters from words
-  const availableLetters = Array.from(
-    new Set(
-      words
-        .map((word) => word.word.charAt(0).toUpperCase())
-        .filter((letter) => /[A-Z]/.test(letter))
-    )
-  ).sort();
+  const availableLetters = useMemo(() => {
+    return Array.from(
+      new Set(
+        words
+          .map((word) => word.word.charAt(0).toUpperCase())
+          .filter((letter) => /[A-Z]/.test(letter))
+      )
+    ).sort();
+  }, [words])
 
   if (availableLetters.length === 0) {
     return null;

@@ -2,7 +2,7 @@ import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Button } from "./ui/button";
 import { Trash2Icon, Volume2 } from "lucide-react";
-import { useState } from "react";
+import { memo, useState } from "react";
 import toast from "react-hot-toast";
 import { cx } from "class-variance-authority";
 
@@ -14,7 +14,7 @@ interface WordCardProps {
   isOwner: boolean;
 }
 
-export default function WordCard({
+const WordCard = memo(function WordCard({
   word,
   meaning,
   trigger,
@@ -101,4 +101,6 @@ export default function WordCard({
       </p>
     </div>
   );
-}
+})
+
+export default WordCard;

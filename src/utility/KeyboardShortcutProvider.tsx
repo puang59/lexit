@@ -1,7 +1,7 @@
 'use client';
 import { useHelp } from "@/store/states";
 import { useRouter } from "next/navigation";
-import { createContext, useContext, useEffect, useRef, useState } from "react"
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react"
 
 interface ShortcutContextType {
   query: string;
@@ -19,6 +19,11 @@ export function KeyboardShortcutProvider({ children }: { children: React.ReactNo
 
   const showHelpRef = useRef(showHelp);
   showHelpRef.current = showHelp; 
+
+  const contextValue = useMemo(
+    () => ({query, setQuery, searchInputRef}), 
+    [query]
+  )
 
   useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
@@ -103,7 +108,7 @@ export function KeyboardShortcutProvider({ children }: { children: React.ReactNo
     }, [router, setShowHelp]);
 
   return (
-    <ShortcutContext.Provider value={{ query, setQuery, searchInputRef }}>
+    <ShortcutContext.Provider value={contextValue}>
       {children}
     </ShortcutContext.Provider>
   )

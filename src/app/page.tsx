@@ -79,7 +79,7 @@ export default function Home() {
   useEffect(() => {
     const wordList = wordListRef.current;
     if (wordList) {
-      wordList.addEventListener("scroll", handleScroll);
+      wordList.addEventListener("scroll", handleScroll, {passive: true});
       return () => wordList.removeEventListener("scroll", handleScroll);
     }
   }, [allWords, isLoadingMore, hasMore]);
@@ -160,8 +160,7 @@ export default function Home() {
           className="w-full max-w-3xl mx-auto max-h-[65vh] overflow-y-auto"
           data-word-list
         >
-          {words &&
-            (words.length > 0 ? (
+          {allWords.length > 0 ? (
               <>
                 <ul>
                   {allWords.map((word) => (
@@ -175,25 +174,21 @@ export default function Home() {
                     />
                   ))}
                 </ul>
-                {isLoadingMore && (
+                {(isLoadingMore || words === undefined) && (
                   <div className="flex justify-center py-4">
                     <Loader />
                   </div>
                 )}
               </>
-            ) : (
-              <div>
-                {selectedLetter ? (
-                  <p className="flex items-center justify-center">
-                    No words found
-                  </p>
-                ) : (
-                  <p className="flex items-center justify-center">
-                    No words found
-                  </p>
-                )}
+            ) : words === undefined ? (
+              <div className="flex justify-center py-4">
+                <Loader />
               </div>
-            ))}
+            ) : (
+                  <p className="flex items-center justify-center">
+                    No words found
+                  </p>
+            )}
         </div>
 
         {/* Footer with Alphabet Filter */}

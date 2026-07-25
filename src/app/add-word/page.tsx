@@ -233,11 +233,6 @@ export default function AddWord() {
     }
   };
 
-  const isOwner = (ownerId: string) => {
-    if (ownerId == user?.id) return true;
-    return false;
-  };
-
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
@@ -435,7 +430,8 @@ export default function AddWord() {
               meaning={getWord?.meaning || ""}
               trigger={getWord?.trigger || ""}
               examples={getWord?.examples || []}
-              isOwner={isOwner(getWord?.owner || "")}
+              currentUserId={user?.id}
+              ownerId={getWord?.owner}
             />
           </div>
         )}

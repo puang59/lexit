@@ -91,11 +91,6 @@ export default function Vault() {
     }
   }, [allWords, isLoadingMore, hasMore]);
 
-  const isOwner = (ownerId: string) => {
-    if (ownerId === user?.id) return true;
-    return false;
-  };
-
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "k" && (event.metaKey || event.ctrlKey)) {
@@ -194,7 +189,8 @@ export default function Vault() {
                       meaning={word.meaning}
                       trigger={word.trigger}
                       examples={word.examples}
-                      isOwner={isOwner(word.owner || "")}
+                      currentUserId={user?.id}
+                      ownerId={word.owner}
                     />
                   ))}
                 </ul>

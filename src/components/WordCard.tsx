@@ -12,7 +12,7 @@ interface WordCardProps {
   trigger: string;
   examples: string[];
   currentUserId: string | undefined;
-  ownerId: string;
+  ownerId: string | undefined;
 }
 
 const WordCard = memo(function WordCard({

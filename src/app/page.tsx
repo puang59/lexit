@@ -22,9 +22,13 @@ import NavBar from "@/components/NavBar";
 import Loader from "@/components/Loader";
 import SmoothFadeLayout from "@/components/SmoothFadePageTransition";
 import { useShortcuts } from "@/utility/KeyboardShortcutProvider";
-import HelpDialog from "@/components/HelpDialog";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useStates } from "@/store/states";
+
+import dynamic from "next/dynamic";
+const HelpDialog = dynamic(() => import ("@/components/HelpDialog"), {
+  ssr: false,
+}) 
 
 export default function Home() {
   const router = useRouter();

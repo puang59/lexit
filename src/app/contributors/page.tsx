@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import Loader from "@/components/Loader";
 import Image from "next/image";
 import SmoothFadeLayout from "@/components/SmoothFadePageTransition";
+import HelpDialog from "@/components/HelpDialog";
 
 export default function Contributors() {
   const [contributors, setContributors] = useState([]);
@@ -89,6 +90,7 @@ export default function Contributors() {
 
         {/* Footer */}
         <footer className="mt-auto mb-10 ml-auto mx-5"></footer>
+        <HelpDialog />
       </main>
     </SmoothFadeLayout>
   );

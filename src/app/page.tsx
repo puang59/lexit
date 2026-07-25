@@ -21,10 +21,12 @@ import Image from "next/image";
 import NavBar from "@/components/NavBar";
 import Loader from "@/components/Loader";
 import SmoothFadeLayout from "@/components/SmoothFadePageTransition";
+import { useShortcuts } from "@/utility/KeyboardShortcutProvider";
+import HelpDialog from "@/components/HelpDialog";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export default function Home() {
   const router = useRouter();
-  const searchInputRef = useRef<HTMLInputElement>(null);
   const wordListRef = useRef<HTMLDivElement>(null);
 
   const { user } = useUser();
@@ -36,14 +38,15 @@ export default function Home() {
 
   const WORDS_PER_PAGE = 20;
 
-  const [query, setQuery] = useState("");
+  const { query, setQuery, searchInputRef } = useShortcuts();
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
-  const [showHelp, setShowHelp] = useState(false);
+
+  const debounceQuery = useDebounce(query, 300);
 
   const words = useQuery(api.words.lazyLoadWords, {
     limit: WORDS_PER_PAGE,
     startsAfterId: lastId,
-    searchQuery: query || undefined,
+    searchQuery: debounceQuery|| undefined,
     selectedLetter: selectedLetter || undefined,
   });
   const wordsCount = useQuery(api.words.getTotalWordCount) || 0;
@@ -53,7 +56,7 @@ export default function Home() {
     setLastId(undefined);
     setHasMore(true);
     setIsLoadingMore(false);
-  }, [query, selectedLetter]);
+  }, [debounceQuery, selectedLetter]);
 
   useEffect(() => {
     if (words && words.length > 0) {
@@ -73,6 +76,14 @@ export default function Home() {
     }
   }, [words]);
 
+  useEffect(() => {
+    const wordList = wordListRef.current;
+    if (wordList) {
+      wordList.addEventListener("scroll", handleScroll);
+      return () => wordList.removeEventListener("scroll", handleScroll);
+    }
+  }, [allWords, isLoadingMore, hasMore]);
+
   const handleScroll = () => {
     if (!wordListRef.current || isLoadingMore || !hasMore) return;
 
@@ -86,100 +97,10 @@ export default function Home() {
     }
   };
 
-  useEffect(() => {
-    const wordList = wordListRef.current;
-    if (wordList) {
-      wordList.addEventListener("scroll", handleScroll);
-      return () => wordList.removeEventListener("scroll", handleScroll);
-    }
-  }, [allWords, isLoadingMore, hasMore]);
-
   const isOwner = (ownerId: string) => {
     if (ownerId === user?.id) return true;
     return false;
   };
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      const wordList = document.querySelector("[data-word-list]");
-
-      if (event.key === "k") {
-        if (event.metaKey || event.ctrlKey) {
-          event.preventDefault();
-          searchInputRef.current?.focus();
-        } else {
-          if (
-            event.target instanceof HTMLInputElement ||
-            event.target instanceof HTMLTextAreaElement
-          ) {
-            return;
-          }
-          event.preventDefault();
-          if (wordList) {
-            wordList.scrollBy({ top: -100, behavior: "smooth" });
-          }
-        }
-        return;
-      }
-
-      if (event.key === "Escape") {
-        if (
-          event.target instanceof HTMLInputElement ||
-          event.target instanceof HTMLTextAreaElement
-        ) {
-          event.target.blur();
-          return;
-        }
-        if (showHelp) {
-          setShowHelp(false);
-        } else {
-          setQuery("");
-        }
-        return;
-      }
-
-      if (
-        event.target instanceof HTMLInputElement ||
-        event.target instanceof HTMLTextAreaElement
-      ) {
-        return;
-      }
-
-      switch (event.key) {
-        case "/":
-          event.preventDefault();
-          searchInputRef.current?.focus();
-          break;
-        case "Enter":
-          if (searchInputRef.current === document.activeElement) {
-            event.preventDefault();
-          }
-          break;
-        case "+":
-        case "a":
-        case "A":
-          event.preventDefault();
-          router.push("/add-word");
-          break;
-        case "j":
-        case "J":
-          event.preventDefault();
-          if (wordList) {
-            wordList.scrollBy({ top: 100, behavior: "smooth" });
-          }
-          break;
-        case "?":
-          if (event.shiftKey) {
-            event.preventDefault();
-            setShowHelp(!showHelp);
-          }
-          break;
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [router, showHelp, setQuery]);
 
   return (
     <SmoothFadeLayout>
@@ -297,79 +218,7 @@ export default function Home() {
           <Plus size={16} />
         </Button>
 
-        {/* Help Dialog */}
-        {showHelp && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold">Keyboard Shortcuts</h3>
-                <button
-                  type="button"
-                  onClick={() => setShowHelp(false)}
-                  onKeyDown={(e) => e.key === "Enter" && setShowHelp(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                  aria-label="Close help dialog"
-                >
-                  ✕
-                </button>
-              </div>
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between items-center">
-                  <span>Focus search</span>
-                  <div className="flex gap-1">
-                    <kbd className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded border">
-                      ⌘K
-                    </kbd>
-                    <kbd className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded border">
-                      /
-                    </kbd>
-                  </div>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span>Clear search</span>
-                  <kbd className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded border">
-                    Esc
-                  </kbd>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span>Add new word</span>
-                  <div className="flex gap-1">
-                    <kbd className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded border">
-                      +
-                    </kbd>
-                    <kbd className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded border">
-                      A
-                    </kbd>
-                  </div>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span>Scroll through words</span>
-                  <div className="flex gap-1">
-                    <kbd className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded border">
-                      J
-                    </kbd>
-                    <kbd className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded border">
-                      K
-                    </kbd>
-                  </div>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span>Show this help</span>
-                  <kbd className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded border">
-                    Shift + ?
-                  </kbd>
-                </div>
-              </div>
-              <div className="mt-4 pt-3 border-t text-xs text-gray-500 text-center">
-                Press{" "}
-                <kbd className="bg-gray-100 text-gray-600 text-xs px-1 py-0.5 rounded border">
-                  Esc
-                </kbd>{" "}
-                or click outside to close
-              </div>
-            </div>
-          </div>
-        )}
+        <HelpDialog />
       </main>
     </SmoothFadeLayout>
   );

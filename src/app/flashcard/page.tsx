@@ -13,6 +13,7 @@ import {
   UserButton,
 } from "@clerk/nextjs";
 import SmoothFadeLayout from "@/components/SmoothFadePageTransition";
+import HelpDialog from "@/components/HelpDialog";
 
 export default function Flashcard() {
   const { user } = useUser();
@@ -74,12 +75,12 @@ export default function Flashcard() {
 
       if (event.code === "Space" || event.code === "Enter") {
         event.preventDefault();
-        
+
         setRevealed(prev => {
           if (!prev.meaning) return { ...prev, meaning: true };
           if (!prev.trigger) return { ...prev, trigger: true };
           if (!prev.examples && wordData?.examples && wordData.examples.length > 0) return { ...prev, examples: true };
-          
+
           nextWord();
           return prev;
         });
@@ -128,15 +129,15 @@ export default function Flashcard() {
           ) : !wordData ? (
             <div className="text-lg">Loading...</div>
           ) : (
-            <div 
-              className="flex flex-col w-full bg-transparent border-2 border-dotted border-zinc-300 dark:border-zinc-700 rounded-lg p-5 sm:p-8 text-center gap-5 relative" 
+            <div
+              className="flex flex-col w-full bg-transparent border-2 border-dotted border-zinc-300 dark:border-zinc-700 rounded-lg p-5 sm:p-8 text-center gap-5 relative"
             >
               <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight break-words">{wordData.word}</h2>
-              
+
               <div className="flex flex-col gap-5 text-base sm:text-lg relative z-10 w-full mt-2 text-left">
-                
+
                 {/* Meaning Section */}
-                <div 
+                <div
                   className="relative cursor-pointer group"
                   onClick={() => setRevealed(prev => ({ ...prev, meaning: true }))}
                 >
@@ -145,9 +146,9 @@ export default function Flashcard() {
                     <p className="text-zinc-800 dark:text-zinc-200">{wordData.meaning}</p>
                   </div>
                 </div>
-                
+
                 {/* Trigger Section */}
-                <div 
+                <div
                   className="relative cursor-pointer group border-t border-zinc-200 dark:border-zinc-800 pt-4"
                   onClick={() => setRevealed(prev => ({ ...prev, trigger: true }))}
                 >
@@ -159,7 +160,7 @@ export default function Flashcard() {
 
                 {/* Examples Section */}
                 {wordData.examples && wordData.examples.length > 0 && (
-                  <div 
+                  <div
                     className="relative cursor-pointer group border-t border-zinc-200 dark:border-zinc-800 pt-4"
                     onClick={() => setRevealed(prev => ({ ...prev, examples: true }))}
                   >
@@ -207,6 +208,7 @@ export default function Flashcard() {
             </Button>
           </div>
         </div>
+        <HelpDialog />
       </main>
     </SmoothFadeLayout>
   );

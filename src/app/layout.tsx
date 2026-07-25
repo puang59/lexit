@@ -12,6 +12,7 @@ import { ConvexClientProvider } from "@/utility/ConvexClientProvider";
 import { Analytics } from "@vercel/analytics/next";
 import Notification from "@/components/Notification";
 import "./globals.css";
+import { KeyboardShortcutProvider } from "@/utility/KeyboardShortcutProvider";
 
 const InstrumentSerif = Instrument_Serif({
   variable: "--font-instrument-serif",
@@ -69,32 +70,34 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className={`${InstrumentSerif.variable} antialiased`}>
-          <ConvexClientProvider>
-            <Notification />
-            {children}
-            <Analytics />
-            <footer className="fixed bottom-0 left-0 right-0 text-center py-3 text-xs text-gray-500 bg-white/80 dark:bg-black/80 backdrop-blur-sm">
-              <span className="mr-3">
-                This is Open Source •{" "}
-                <a
-                  href="https://github.com/puang59/lexit"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-black hover:underline dark:text-white"
-                >
-                  View on GitHub
-                </a>{" "}
-              </span>
-              |{" "}
-              <span className="ml-3">
-                <kbd className="bg-gray-100 text-gray-600 text-xs px-1 py-0.5 rounded border mr-1 dark:bg-zinc-600 dark:text-gray-300">
-                  Shift + ?
-                </kbd>{" "}
-                for shortcuts
-              </span>
-            </footer>
-          </ConvexClientProvider>
-        </body>
+          <KeyboardShortcutProvider>
+            <ConvexClientProvider>
+              <Notification />
+              {children}
+              <Analytics />
+              <footer className="fixed bottom-0 left-0 right-0 text-center py-3 text-xs text-gray-500 bg-white/80 dark:bg-black/80 backdrop-blur-sm">
+                <span className="mr-3">
+                  This is Open Source •{" "}
+                  <a
+                    href="https://github.com/puang59/lexit"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-black hover:underline dark:text-white"
+                  >
+                    View on GitHub
+                  </a>{" "}
+                </span>
+                |{" "}
+                <span className="ml-3">
+                  <kbd className="bg-gray-100 text-gray-600 text-xs px-1 py-0.5 rounded border mr-1 dark:bg-zinc-600 dark:text-gray-300">
+                    Shift + ?
+                  </kbd>{" "}
+                  for shortcuts
+                </span>
+              </footer>
+            </ConvexClientProvider>
+          </KeyboardShortcutProvider>
+          </body>
       </html>
     </ClerkProvider>
   );

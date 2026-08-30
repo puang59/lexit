@@ -28,6 +28,7 @@ export default function AddWord() {
 
   const [word, setWord] = useState("");
   const [spelling, setSpelling] = useState("");
+  const [suggestionExists, setSuggestionExists] = useState(true);
   const [meaning, setMeaning] = useState("");
   const [trigger, setTrigger] = useState("");
   const [examples, setExamples] = useState<string[]>([]);
@@ -66,15 +67,18 @@ export default function AddWord() {
     };
   }, [word]);
 
-  const spellCheck = async (): Promise<string | null> => {
+  const spellCheck = async (currentWord: string, signal: AbortSignal): Promise<string | null> => {
     setSpelling("");
+    setSuggestionExists(true);
+
     try {
       const res = await fetch("/api/spell-check", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ word: AIDebouncedWord }),
+        body: JSON.stringify({ word: currentWord }),
+        signal,
       });
 
       if (res.status === 429) {
@@ -89,19 +93,63 @@ export default function AddWord() {
 
       const data = await res.json();
 
-      if (data.status === "correction_needed") {
+      // nspell says it's correct
+      if (data.status === "correct") {
+        return "correct";
+      }
+
+      // nspell says incorrect but has suggestions
+      if (data.suggestions?.length > 0) {
         setSpelling(data.suggestions[0]);
         return null;
       }
 
-      return data.status;
+      // nspell couldn't find a suggestion → LLM fallback
+
+      const llmRes = await fetch("/api/llm-spell-check", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ word: currentWord }),
+        signal,
+      });
+
+      if (llmRes.status === 429) {
+        throw new Error(
+          "Rate limit exceeded. Please wait a moment before trying again.",
+        );
+      }
+
+      if (!llmRes.ok) {
+        throw new Error("Failed to check spelling with LLM");
+      }
+
+      const llmData = await llmRes.json();
+
+      // LLM confirms it's a legitimate word
+      if (llmData.isValid) {
+        setSuggestionExists(true);
+        return "correct";
+      }
+
+      // LLM found a correction
+      if (llmData.correctedWord) {
+        setSpelling(llmData.correctedWord);
+        setSuggestionExists(true);
+        return null;
+      }
+
+      setSuggestionExists(false);
+      return null;
     } catch (error) {
+      if ((error as Error).name === "AbortError") return null;
       notifyError((error as Error).message);
       return null;
     }
   };
 
-  const fetchMeaning = async () => {
+  const fetchMeaning = async (currentWord: string) => {
     try {
       setMeaningLoading(true);
       const res = await fetch("/api/generate-meaning", {
@@ -109,7 +157,7 @@ export default function AddWord() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ word: AIDebouncedWord }),
+        body: JSON.stringify({ word: currentWord }),
       });
 
       if (res.status === 429)
@@ -126,7 +174,7 @@ export default function AddWord() {
     }
   };
 
-  const fetchTrigger = async () => {
+  const fetchTrigger = async (currentWord: string) => {
     try {
       setTriggerLoading(true);
       const res = await fetch("/api/generate-trigger", {
@@ -134,7 +182,7 @@ export default function AddWord() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ word: AIDebouncedWord }),
+        body: JSON.stringify({ word: currentWord }),
       });
 
       if (res.status === 429)
@@ -151,7 +199,7 @@ export default function AddWord() {
     }
   };
 
-  const fetchExamples = async () => {
+  const fetchExamples = async (currentWord: string) => {
     try {
       setExamplesLoading(true);
       const res = await fetch("/api/generate-examples", {
@@ -159,7 +207,7 @@ export default function AddWord() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ word: AIDebouncedWord }),
+        body: JSON.stringify({ word: currentWord }),
       });
 
       if (res.status === 429)
@@ -176,15 +224,15 @@ export default function AddWord() {
     }
   };
 
-  const fetchDerviation = async () => {
+  const fetchDerivation = async (currentWord: string) => {
     try {
       const res = await fetch(
-        `https://api.datamuse.com/words?sp=${encodeURIComponent(word.slice(0, 6))}*&md=p&max=100`,
+        `https://api.datamuse.com/words?sp=${encodeURIComponent(currentWord.slice(0, 6))}*&md=p&max=100`,
       );
       if (!res.ok) throw new Error("Failed to fetch derivations");
       const data = await res.json();
 
-      const base = word.toLowerCase();
+      const base = currentWord.toLowerCase();
       const baseRoot = base.slice(0, 5);
 
       // keep only clean derivations
@@ -215,20 +263,25 @@ export default function AddWord() {
   useEffect(() => {
     if (!AIDebouncedWord || meaningExists) return;
 
+    const controller = new AbortController();
+    const signal = controller.signal;
+
     const run = async () => {
-      const status = await spellCheck();
-      if (status !== "correct") return;
+      const status = await spellCheck(AIDebouncedWord, signal);
+      if (status !== "correct" || signal.aborted) return;
 
       await Promise.all([
-        fetchDerviation(),
-        fetchMeaning(),
-        fetchTrigger(),
-        fetchExamples(),
+        fetchDerivation(AIDebouncedWord),
+        fetchMeaning(AIDebouncedWord),
+        fetchTrigger(AIDebouncedWord),
+        fetchExamples(AIDebouncedWord),
       ]);
     };
 
     run();
-  }, [AIDebouncedWord]);
+
+    return () => controller.abort();
+  }, [AIDebouncedWord, meaningExists]);
 
   const existingWords = words.map((w) => w.word.toLowerCase());
   const alreadyExists = existingWords.includes(word.toLowerCase());
@@ -250,7 +303,7 @@ export default function AddWord() {
     return !isNaN(parseFloat(n)) && isFinite(Number(n));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (isNumeric(word.charAt(0)))
       return notifyError("We dont support that yet!");
@@ -263,7 +316,7 @@ export default function AddWord() {
       );
     const capitalizedWord = word.charAt(0).toUpperCase() + word.slice(1);
     try {
-      void createWord({
+      await createWord({
         owner: user?.id || "anonymous",
         word: capitalizedWord,
         meaning: meaning,
@@ -271,7 +324,7 @@ export default function AddWord() {
         examples: examples,
         derivation: derivations,
       });
-      void updateCount();
+      await updateCount();
 
       notifySuccess();
       setWord("");
@@ -320,9 +373,9 @@ export default function AddWord() {
 
   const handleRegenerateMeaning = async (type: string) => {
     try {
-      if (type === "Meaning") await fetchMeaning();
-      else if (type === "Trigger") await fetchTrigger();
-      else await fetchExamples();
+      if (type === "Meaning") await fetchMeaning(AIDebouncedWord);
+      else if (type === "Trigger") await fetchTrigger(AIDebouncedWord);
+      else await fetchExamples(AIDebouncedWord);
     } catch (err) {
       notifyError((err as Error).message);
     }
@@ -364,6 +417,12 @@ export default function AddWord() {
                 ⌘K
               </kbd>
             </div>
+
+            {!suggestionExists && (
+              <p className="mt-2 text-sm text-gray-500">
+                Please check the spelling or try a different word.
+              </p>
+            )}
 
             {spelling && (
               <p className="mt-2 text-sm text-gray-500">

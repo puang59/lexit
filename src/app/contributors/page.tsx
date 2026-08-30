@@ -58,27 +58,34 @@ export default function Contributors() {
           <div className="flex flex-col justify-center items-center w-full max-w-3xl mx-auto px-6">
             {contributors.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-y-6 gap-x-4 mt-6 w-full max-w-3xl mx-auto px-6">
-                {contributors.map((contributor: any) => (
-                  <a
-                    key={contributor.name}
-                    href={contributor.profile}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <div className="flex flex-col items-center">
-                      <Image
-                        src={contributor.avatar}
-                        alt={contributor.name}
-                        width={80}
-                        height={80}
-                        className="rounded-sm"
-                        placeholder="blur"
-                        blurDataURL="https:/wikipedia/commons/8/89/Portrait_Placeholder.png"
-                      />
-                      <p className="mt-2 text-center">{contributor.name}</p>
-                    </div>
-                  </a>
-                ))}
+                {contributors
+                  .filter(
+                    (contributor: any) => contributor.name !== "vercel[bot]",
+                  )
+                  .sort((a: any, b: any) =>
+                    a.name.toLowerCase().localeCompare(b.name.toLowerCase()),
+                  )
+                  .map((contributor: any) => (
+                    <a
+                      key={contributor.name}
+                      href={contributor.profile}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <div className="flex flex-col items-center">
+                        <Image
+                          src={contributor.avatar}
+                          alt={contributor.name}
+                          width={80}
+                          height={80}
+                          className="rounded-sm"
+                          placeholder="blur"
+                          blurDataURL="https:/wikipedia/commons/8/89/Portrait_Placeholder.png"
+                        />
+                        <p className="mt-2 text-center">{contributor.name}</p>
+                      </div>
+                    </a>
+                  ))}
               </div>
             ) : (
               <div className="flex items-center justify-center h-64 w-full">

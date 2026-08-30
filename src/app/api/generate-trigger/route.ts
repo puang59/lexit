@@ -43,14 +43,11 @@ export async function POST(request: Request) {
       `,
     });
 
-    console.log("TRIGGER: ", text);
-
     return new Response(JSON.stringify({ trigger: text }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.log(err);
     return new Response("Bad Request", { status: 400 });
   }
 }

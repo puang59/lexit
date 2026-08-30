@@ -263,7 +263,6 @@ export default function AddWord() {
       );
     const capitalizedWord = word.charAt(0).toUpperCase() + word.slice(1);
     try {
-      console.log("derivations:", derivations);
       void createWord({
         owner: user?.id || "anonymous",
         word: capitalizedWord,

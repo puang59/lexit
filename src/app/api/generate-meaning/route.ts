@@ -44,7 +44,6 @@ export async function POST(request: Request) {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.log(err);
     return new Response("Bad Request", { status: 400 });
   }
 }

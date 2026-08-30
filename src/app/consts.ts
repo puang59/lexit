@@ -1,4 +1,4 @@
-export const MODEL = "llama-3.1-8b-instant";
+export const MODEL = "openai/gpt-oss-20b";
 
 export const greetings = [
   "Discovered a new word? Let's define it!",

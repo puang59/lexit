@@ -189,7 +189,7 @@ export default function Vault() {
                       meaning={word.meaning}
                       trigger={word.trigger}
                       examples={word.examples}
-                      derivations={word.derivations}
+                      derivations={word.derivation}
                       currentUserId={user?.id}
                       ownerId={word.owner}
                     />

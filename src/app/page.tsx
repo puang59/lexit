@@ -15,6 +15,7 @@ import {
   UserButton,
   useUser,
 } from "@clerk/nextjs";
+import { Fragment } from "react";
 import WordCard from "@/components/WordCard";
 import AlphabetFilter from "@/components/AlphabetFilter";
 import Image from "next/image";
@@ -165,14 +166,14 @@ export default function Home() {
         {/* Words List */}
         <div
           ref={wordListRef}
-          className="w-full max-w-3xl mx-auto max-h-[65vh] overflow-y-auto"
+          className="w-full max-w-3xl mx-auto max-h-[65vh] overflow-y-auto no-scrollbar"
           data-word-list
         >
           {allWords.length > 0 ? (
             <>
               <ul>
                 {allWords.map((word) => (
-                  <>
+                  <Fragment key={word._id}>
                     <WordCard
                       key={word._id}
                       word={word.word}
@@ -183,7 +184,7 @@ export default function Home() {
                       currentUserId={user?.id}
                       ownerId={word.owner}
                     />
-                  </>
+                  </Fragment>
                 ))}
               </ul>
               {(isLoadingMore || words === undefined) && (

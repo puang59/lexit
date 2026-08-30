@@ -383,14 +383,16 @@ export default function AddWord() {
                 <div className="mt-5">
                   <label className="block font-medium text-sm text-gray-700 dark:text-gray-400">
                     Word Forms:{" "}
-                    {derivations.map((d) => (
-                      <span
-                        key={d}
-                        className="mr-1 bg-slate-200 rounded-sm px-2 py-0.5 text-gray-700 font-medium"
-                      >
-                        {d}
-                      </span>
-                    ))}
+                    <span className="ml-2">
+                      {derivations.map((d) => (
+                        <span
+                          key={d}
+                          className="mr-1 bg-slate-200 rounded-sm px-2 py-0.5 text-gray-700 font-medium"
+                        >
+                          {d}
+                        </span>
+                      ))}
+                    </span>
                   </label>
                 </div>
               </section>

@@ -8,7 +8,7 @@ export default defineSchema({
     meaning: v.string(),
     trigger: v.string(),
     examples: v.array(v.string()),
-    dervation: v.optional(v.string()),
+    derivation: v.optional(v.array(v.string())),
   }).index("by_word", ["word"]),
   metadata: defineTable({
     word_count: v.number(),

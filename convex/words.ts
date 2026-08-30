@@ -8,6 +8,7 @@ export const createWord = mutation({
     meaning: v.string(),
     trigger: v.string(),
     examples: v.array(v.string()),
+    derivation: v.array(v.string()),
   },
   handler: async (ctx, args) => {
     const id = await ctx.db.insert("words", {
@@ -16,6 +17,7 @@ export const createWord = mutation({
       meaning: args.meaning,
       trigger: args.trigger,
       examples: args.examples,
+      derivation: args.derivation,
     });
     return id;
   },

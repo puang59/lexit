@@ -42,7 +42,7 @@ export default function Vault() {
           searchQuery: query || undefined,
           selectedLetter: selectedLetter || undefined,
         }
-      : "skip"
+      : "skip",
   );
 
   useEffect(() => {
@@ -189,6 +189,7 @@ export default function Vault() {
                       meaning={word.meaning}
                       trigger={word.trigger}
                       examples={word.examples}
+                      derivations={word.derivations}
                       currentUserId={user?.id}
                       ownerId={word.owner}
                     />

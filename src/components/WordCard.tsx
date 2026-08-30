@@ -11,6 +11,7 @@ interface WordCardProps {
   meaning: string;
   trigger: string;
   examples: string[];
+  derivations: string[] | undefined;
   currentUserId: string | undefined;
   ownerId: string | undefined;
 }
@@ -20,8 +21,9 @@ const WordCard = memo(function WordCard({
   meaning,
   trigger,
   examples,
+  derivations,
   currentUserId,
-  ownerId
+  ownerId,
 }: WordCardProps) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const deleteWord = useMutation(api.words.deleteWord);
@@ -68,7 +70,10 @@ const WordCard = memo(function WordCard({
         >
           <Volume2
             size={16}
-            className={cx("text-black dark:text-gray-300", isSpeaking && "text-gray-900 dark:text-gray-500")}
+            className={cx(
+              "text-black dark:text-gray-300",
+              isSpeaking && "text-gray-900 dark:text-gray-500",
+            )}
           />
         </Button>
       </div>
@@ -96,6 +101,22 @@ const WordCard = memo(function WordCard({
         })}
       </ul>
 
+      {derivations && derivations.length > 0 && (
+        <p className="mt-5">
+          <label className="block font-medium text-sm text-gray-700 dark:text-gray-400">
+            Word Forms:{" "}
+            {derivations.map((d) => (
+              <span
+                key={d}
+                className="mr-1 bg-slate-200 rounded-sm px-2 py-0.5 text-gray-700 font-medium"
+              >
+                {d}
+              </span>
+            ))}
+          </label>
+        </p>
+      )}
+
       <p className="mt-4">
         {" "}
         <span className="font-bold">[TRIGGER] </span>{" "}
@@ -103,6 +124,6 @@ const WordCard = memo(function WordCard({
       </p>
     </div>
   );
-})
+});
 
 export default WordCard;

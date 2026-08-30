@@ -26,9 +26,9 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { useStates } from "@/store/states";
 
 import dynamic from "next/dynamic";
-const HelpDialog = dynamic(() => import ("@/components/HelpDialog"), {
+const HelpDialog = dynamic(() => import("@/components/HelpDialog"), {
   ssr: false,
-}) 
+});
 
 export default function Home() {
   const router = useRouter();
@@ -51,7 +51,7 @@ export default function Home() {
   const words = useQuery(api.words.lazyLoadWords, {
     limit: WORDS_PER_PAGE,
     startsAfterId: lastId,
-    searchQuery: debounceQuery|| undefined,
+    searchQuery: debounceQuery || undefined,
     selectedLetter: selectedLetter || undefined,
   });
   const wordsCount = useQuery(api.words.getTotalWordCount) || 0;
@@ -84,12 +84,12 @@ export default function Home() {
   useEffect(() => {
     const wordList = wordListRef.current;
     if (wordList) {
-      wordList.addEventListener("scroll", handleScroll, {passive: true});
+      wordList.addEventListener("scroll", handleScroll, { passive: true });
       return () => wordList.removeEventListener("scroll", handleScroll);
     }
   }, [allWords, isLoadingMore, hasMore]);
 
-  const {scrollPosition, setScrollPosition} = useStates();
+  const { scrollPosition, setScrollPosition } = useStates();
 
   const handleScroll = () => {
     if (!wordListRef.current || isLoadingMore || !hasMore) return;
@@ -108,7 +108,7 @@ export default function Home() {
     if (wordListRef.current && scrollPosition > 0 && allWords.length > 0) {
       wordListRef.current.scrollTop = scrollPosition;
     }
-  }, [allWords.length, scrollPosition])
+  }, [allWords.length, scrollPosition]);
 
   return (
     <SmoothFadeLayout>
@@ -169,35 +169,36 @@ export default function Home() {
           data-word-list
         >
           {allWords.length > 0 ? (
-              <>
-                <ul>
-                  {allWords.map((word) => (
+            <>
+              <ul>
+                {allWords.map((word) => (
+                  <>
                     <WordCard
                       key={word._id}
                       word={word.word}
                       meaning={word.meaning}
                       trigger={word.trigger}
                       examples={word.examples}
+                      derivations={word.derivation}
                       currentUserId={user?.id}
                       ownerId={word.owner}
                     />
-                  ))}
-                </ul>
-                {(isLoadingMore || words === undefined) && (
-                  <div className="flex justify-center py-4">
-                    <Loader />
-                  </div>
-                )}
-              </>
-            ) : words === undefined ? (
-              <div className="flex justify-center py-4">
-                <Loader />
-              </div>
-            ) : (
-                  <p className="flex items-center justify-center">
-                    No words found
-                  </p>
-            )}
+                  </>
+                ))}
+              </ul>
+              {(isLoadingMore || words === undefined) && (
+                <div className="flex justify-center py-4">
+                  <Loader />
+                </div>
+              )}
+            </>
+          ) : words === undefined ? (
+            <div className="flex justify-center py-4">
+              <Loader />
+            </div>
+          ) : (
+            <p className="flex items-center justify-center">No words found</p>
+          )}
         </div>
 
         {/* Footer with Alphabet Filter */}
@@ -218,10 +219,11 @@ export default function Home() {
           size="icon"
           className="fixed bottom-20 right-6 rounded-full cursor-pointer z-50"
           onClick={() => {
-            if (wordListRef.current) setScrollPosition(wordListRef.current.scrollTop);
+            if (wordListRef.current)
+              setScrollPosition(wordListRef.current.scrollTop);
 
-            router.push("/add-word")}
-          }
+            router.push("/add-word");
+          }}
         >
           <Plus size={16} />
         </Button>

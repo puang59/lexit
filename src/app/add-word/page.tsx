@@ -27,6 +27,7 @@ export default function AddWord() {
   const updateCount = useMutation(api.words.updateCount);
 
   const [word, setWord] = useState("");
+  const [spelling, setSpelling] = useState("");
   const [meaning, setMeaning] = useState("");
   const [trigger, setTrigger] = useState("");
   const [examples, setExamples] = useState<string[]>([]);
@@ -138,6 +139,41 @@ export default function AddWord() {
     }
   };
 
+  const spellCheck = async (): Promise<string | null> => {
+    setSpelling("");
+    try {
+      const res = await fetch("/api/spell-check", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ word: AIDebouncedWord }),
+      });
+
+      if (res.status === 429) {
+        throw new Error(
+          "Rate limit exceeded. Please wait a moment before trying again.",
+        );
+      }
+
+      if (!res.ok) {
+        throw new Error("Failed to check spelling");
+      }
+
+      const data = await res.json();
+
+      if (data.status === "correction_needed") {
+        setSpelling(data.suggestions[0]);
+        return null;
+      }
+
+      return data.status;
+    } catch (error) {
+      notifyError((error as Error).message);
+      return null;
+    }
+  };
+
   const fetchDerviation = async () => {
     try {
       const res = await fetch(
@@ -177,10 +213,19 @@ export default function AddWord() {
   useEffect(() => {
     if (!AIDebouncedWord || meaningExists) return;
 
-    fetchDerviation();
-    fetchMeaning();
-    fetchTrigger();
-    fetchExamples();
+    const run = async () => {
+      const status = await spellCheck();
+      if (status !== "correct") return;
+
+      await Promise.all([
+        fetchDerviation(),
+        fetchMeaning(),
+        fetchTrigger(),
+        fetchExamples(),
+      ]);
+    };
+
+    run();
   }, [AIDebouncedWord]);
 
   const existingWords = words.map((w) => w.word.toLowerCase());
@@ -280,6 +325,11 @@ export default function AddWord() {
     }
   };
 
+  const handleExchange = () => {
+    setWord(spelling);
+    setSpelling("");
+  };
+
   return (
     <SmoothFadeLayout>
       <main className="flex flex-col items-center justify-center text-black h-screen overflow-hidden dark:text-gray-300">
@@ -311,6 +361,20 @@ export default function AddWord() {
                 ⌘K
               </kbd>
             </div>
+
+            {spelling && (
+              <p className="mt-2 text-sm text-gray-500">
+                Did you mean{" "}
+                <button
+                  onClick={handleExchange}
+                  className="bg-slate-200 rounded-sm transition duration-150 hover:bg-slate-300 px-2 py-0.5 text-gray-700 font-medium cursor-pointer"
+                >
+                  {spelling}
+                </button>{" "}
+                ?
+              </p>
+            )}
+
             {meaning.length > 0 && (
               <section>
                 <div className="mt-5 flex items-center justify-between">

@@ -43,6 +43,8 @@ export default function AddWord() {
   const [examplesLoading, setExamplesLoading] = useState(false);
   const [greeting, setGreeting] = useState("");
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   useEffect(() => {
     const random = greetings[Math.floor(Math.random() * greetings.length)];
     setGreeting(random);
@@ -67,7 +69,10 @@ export default function AddWord() {
     };
   }, [word]);
 
-  const spellCheck = async (currentWord: string, signal: AbortSignal): Promise<string | null> => {
+  const spellCheck = async (
+    currentWord: string,
+    signal: AbortSignal,
+  ): Promise<string | null> => {
     setSpelling("");
     setSuggestionExists(true);
 
@@ -314,7 +319,11 @@ export default function AddWord() {
       return notifyError(
         "Sit Tight while AI generates the meaning and examples!",
       );
+
     const capitalizedWord = word.charAt(0).toUpperCase() + word.slice(1);
+
+    setIsSubmitting(true);
+
     try {
       await createWord({
         owner: user?.id || "anonymous",
@@ -327,10 +336,15 @@ export default function AddWord() {
       await updateCount();
 
       notifySuccess();
+
       setWord("");
+      setDebouncedWord("");
+      setAIDebouncedWord("");
       setMeaningExists(false);
     } catch (error) {
       notifyError((error as Error).message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -570,19 +584,22 @@ export default function AddWord() {
             </Button>
           </form>
         </div>
-        {alreadyExists && getWord && getWord?.word?.length > 0 && (
-          <div className="flex flex-col mt-5 justify-center items-center">
-            <WordCard
-              word={getWord?.word || ""}
-              meaning={getWord?.meaning || ""}
-              trigger={getWord?.trigger || ""}
-              examples={getWord?.examples || []}
-              derivations={getWord?.derivation || []}
-              currentUserId={user?.id}
-              ownerId={getWord?.owner}
-            />
-          </div>
-        )}
+        {!isSubmitting &&
+          alreadyExists &&
+          getWord &&
+          getWord?.word?.length > 0 && (
+            <div className="flex flex-col mt-5 justify-center items-center">
+              <WordCard
+                word={getWord?.word || ""}
+                meaning={getWord?.meaning || ""}
+                trigger={getWord?.trigger || ""}
+                examples={getWord?.examples || []}
+                derivations={getWord?.derivation || []}
+                currentUserId={user?.id}
+                ownerId={getWord?.owner}
+              />
+            </div>
+          )}
         <Toaster position="top-right" />
       </main>
     </SmoothFadeLayout>

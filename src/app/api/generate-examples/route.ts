@@ -29,15 +29,11 @@ export async function POST(request: Request) {
       prompt: `
         Write 2 natural, real-life sentences using the word "${word}".
 
-        Sentence requirements:
-        1. First sentence → general real-life example
-        2. Second sentence → personal-style example (use "I" or "my")
-
         Rules:
-        - keep sentences short and simple
-        - use everyday situations (friends, college, work, conversations)
+        - keep sentences natural and realistic which sounds like something someone would actually say in real life and not in stories and books
         - avoid formal or textbook tone
         - make it feel like something someone would actually say
+        - don't keep it bland and simple like "She is a good friend." or "I like to read books."
 
         Return JSON only:
         {
